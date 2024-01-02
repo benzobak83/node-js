@@ -23,7 +23,7 @@
           .finally(getLongPollingOrderLength)
       }
       function getLongPollingOrderLength() {
-        fetch('/api/order/get-long-polling')
+        fetch('/api/order/subscribe')
           .then((res) => res.json())
           .then((orderLength) => {
             renderOrderLength(orderLength)
