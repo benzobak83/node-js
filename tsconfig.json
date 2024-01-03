@@ -7,6 +7,7 @@
     "resolveJsonModule": true,
     "allowJs": true,
     "sourceMap": true,
+    "baseUrl": "./src/",
     "outDir": "./build",
     "removeComments": true,
     "esModuleInterop": true,
@@ -15,7 +16,7 @@
     "noImplicitAny": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "/tsconfig.node.json"],
   "exclude": ["node_modules"],
   "lib": ["esnext"],
   "ts-node": {
