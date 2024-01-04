@@ -5,11 +5,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rimraf ./build && npx tsc",
-    "start": "npm run build && node build/server",
-    "server": "nodemon --watch longPooling.js longPooling.js",
-    "postbuild": "cpy --flat './src/app/views/' './build/app/views/'",
-    "vite": "vite"
+    "start": "vite",
+    "build:dev": "NODE_ENV=development vite build",
+    "build:prod":"NODE_ENV=production vite build"
   },
   "keywords": [],
   "author": "",

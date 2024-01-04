@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Orders</h1>
+    <div>
+      orders:
+      <div class="order-list-wrapper"></div>
+    </div>
+    <div>
+      <button class="btn-add-order">add order</button>
+    </div>
+
+    <script>
+      function createOrderElement(order) {
+        const orderElement = document.createElement('li')
+        orderElement.classList.add('order-item')
+        orderElement.textContent = JSON.stringify(order)
+
+        return orderElement
+      }
+
+      function renderOrderList(orders) {
+        const orderListWrapperElement = document.querySelector(
+          '.order-list-wrapper'
+        )
+        const orderListElement = document.createElement('ul')
+        orderListElement.classList.add('order-list')
+
+        orders.forEach((order) => {
+          const orderElement = createOrderElement(order)
+          orderListElement.appendChild(orderElement)
+        })
+
+        orderListWrapperElement.innerHTML = ''
+        orderListWrapperElement.appendChild(orderListElement)
+      }
+
+      function appendNewOrder(order) {
+        const orderListElement = document.querySelector('.order-list')
+        if (!orderListElement) return
+
+        const orderElement = createOrderElement(order)
+        orderListElement.appendChild(orderElement)
+      }
+
+      function getOrders() {
+        fetch('/api/order/get')
+          .then((res) => res.json())
+          .then((orders) => renderOrderList(orders))
+          .finally(subscribeOnNewOrder)
+      }
+      function subscribeOnNewOrder() {
+        fetch('/api/order/subscribe')
+          .then((res) => res.json())
+          .then((order) => {
+            appendNewOrder(order)
+          })
+          .finally(subscribeOnNewOrder)
+      }
+      function addOrderQuery() {
+        fetch('/api/order/create')
+      }
+
+      getOrders()
+
+      const addOrderBtn = document.querySelector('.btn-add-order')
+      addOrderBtn.addEventListener('click', addOrderQuery)
+    </script>
+  </body>
+</html>

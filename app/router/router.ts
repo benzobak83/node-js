@@ -1,6 +1,6 @@
+import { OrderController } from 'app/controllers/Order/index.js'
+import { StaticController } from 'app/controllers/Static/index.js'
 import { IncomingMessage, ServerResponse } from 'http'
-import { OrderController } from '../controllers/Order/index.js'
-import { StaticController } from '../controllers/Static/index.js'
 
 export const ROUTES: Record<
   string,
@@ -11,5 +11,5 @@ export const ROUTES: Record<
 
   '/api/order/create': OrderController.create,
   '/api/order/get': OrderController.get,
-  '/api/order/subscribe': OrderController.subscribeOnNewLength
+  '/api/order/subscribe': OrderController.subscribeOnNewOrder
 }

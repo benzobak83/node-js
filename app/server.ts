@@ -1,5 +1,6 @@
-import { ROUTES } from 'app/router/router.js'
 import { getParsedUrl } from 'app/utils/getParsedUrl.js'
+import { ROUTES } from 'app/router/router.js'
+
 import {
   IncomingMessage,
   RequestListener,
@@ -21,8 +22,7 @@ const requestListener: RequestListener = (req, res) => {
   reqFn(req, res)
 }
 
-if (false) {
-  //TODO: end PROD
+if (import.meta.env.NODE_ENV === 'production') {
   const app = createServer(requestListener)
   app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000')
