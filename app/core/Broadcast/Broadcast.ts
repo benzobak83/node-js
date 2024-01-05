@@ -1,17 +1,24 @@
 import { Channel } from 'app/core/Channel/Channel.ts'
 
+export enum ChannelNames {
+  'ORDER_FLOW'
+}
+
 export class Broadcast {
-  channels: Record<symbol, Channel>
+  channels: Record<ChannelNames, Channel>
 
   constructor() {
-    this.channels = {}
+    this.channels = {} as Record<ChannelNames, Channel>
   }
 
-  createChannel(description: string) {
-    const id = Symbol(description)
+  createChannel(channelName: ChannelNames) {
     const channel = new Channel()
 
-    this.channels[id] = channel
+    this.channels[channelName] = channel
     return channel
+  }
+
+  getChannel(channelName: ChannelNames) {
+    return this.channels?.[channelName] ?? null
   }
 }

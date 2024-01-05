@@ -4,10 +4,11 @@ import { Events, eventBus } from 'app/globals/EventBus/eventBus.js'
 import { IncomingMessage, ServerResponse } from 'http'
 import { broadcast } from 'app/globals/Broadcast/broadcast.ts'
 import { TOrder } from './types.ts'
+import { ChannelNames } from 'app/core/Broadcast/Broadcast.ts'
 
 export const orders: TOrder[] = []
 
-const orderChannel = broadcast.createChannel('Subscribe on new order flow')
+const orderChannel = broadcast.createChannel(ChannelNames.ORDER_FLOW)
 
 eventBus.on(Events['ORDER:CREATED'], (order: TOrder) => {
   orders.push(order)
