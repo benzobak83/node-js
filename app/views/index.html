@@ -59,8 +59,8 @@
           .then((res) => res.json())
           .then((order) => {
             appendNewOrder(order)
+            subscribeOnNewOrder()
           })
-          .finally(subscribeOnNewOrder)
       }
       function addOrderQuery() {
         fetch('/api/order/create')

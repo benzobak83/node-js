@@ -6,12 +6,9 @@ import { broadcast } from 'app/globals/Broadcast/broadcast.ts'
 import { TOrder } from './types.ts'
 import { ChannelNames } from 'app/core/Broadcast/Broadcast.ts'
 
-export const orders: TOrder[] = []
-
 const orderChannel = broadcast.createChannel(ChannelNames.ORDER_FLOW)
 
 eventBus.on(Events['ORDER:CREATED'], (order: TOrder) => {
-  orders.push(order)
   orderChannel.messageForAllSubscribers(order)
 })
 
@@ -24,6 +21,7 @@ export const subscribeOnNewOrder = (
   orderChannel.addSubscriber(res)
 
   setTimeout(() => {
+    res.statusCode = 200
     res.end(`Application wasnt created for ${TIMEOUT / 1000} seconds`)
   }, TIMEOUT)
 }

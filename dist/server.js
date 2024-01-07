@@ -2,41 +2,108 @@ import { readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
-let orderLength = 0;
-const subscribersOnOrderLength = [];
+const PORT = 3e3;
+const DOMAIN = "http://localhost";
+const BASE_URL = `${DOMAIN}:${PORT}`;
+const getParsedUrl = (req) => {
+  const parsedUrl = new URL(req.url || "/", BASE_URL);
+  return parsedUrl;
+};
+class EventBus {
+  constructor() {
+    this._listeners = {};
+  }
+  on(event, callback) {
+    if (!this._listeners[event]) {
+      this._listeners[event] = [];
+    }
+    this._listeners[event].push(callback);
+  }
+  off(event, callback) {
+    if (!this._listeners[event]) {
+      throw new Error(`Нет события: ${event}`);
+    }
+    this._listeners[event] = this._listeners[event].filter(
+      (listener) => listener !== callback
+    );
+  }
+  emit(event, ...args) {
+    if (!this._listeners[event]) {
+      throw new Error(`Нет события: ${event}`);
+    }
+    this._listeners[event].forEach(function(listener) {
+      listener(...args);
+    });
+  }
+}
+var Events = /* @__PURE__ */ ((Events2) => {
+  Events2[Events2["ORDER:CREATED"] = 0] = "ORDER:CREATED";
+  return Events2;
+})(Events || {});
+const eventBus = new EventBus();
 let ai = 1;
-function subscribeUserOnChangeOrderLength(req, res) {
-  const timeout = 3e4;
-  const user = { id: ai++, res };
-  subscribersOnOrderLength.push(user);
-  res.on("close", () => {
-    unsubscribeUserOnChangeOrderLength(user.id);
-  });
-  setTimeout(() => {
-    res.end(`Application wasnt created for ${timeout / 1e3} seconds`);
-  }, timeout);
-}
-function unsubscribeUserOnChangeOrderLength(userId) {
-  subscribersOnOrderLength.filter((subscriber) => subscriber.id !== userId);
-}
-function sendOderLengthForSubscribers() {
-  subscribersOnOrderLength.forEach((subscriber) => {
-    subscriber.res.end(String(orderLength));
-  });
-}
-function createOrder() {
-  orderLength++;
-  sendOderLengthForSubscribers();
-}
 const create = (req, res) => {
-  createOrder();
-  res.end("Order created");
+  const order = { id: ai++, createdAt: /* @__PURE__ */ new Date() };
+  eventBus.emit(Events["ORDER:CREATED"], order);
+  res.statusCode = 200;
+  res.end(JSON.stringify(order));
+};
+class Channel {
+  constructor() {
+    this._subscribers = /* @__PURE__ */ new Map();
+  }
+  addSubscriber(res) {
+    const subscriber = { res, createdAt: /* @__PURE__ */ new Date() };
+    this._subscribers.set(res, subscriber);
+    res.on("close", () => this.removeSubscriber(res));
+  }
+  removeSubscriber(res) {
+    this._subscribers.delete(res);
+  }
+  messageForAllSubscribers(data) {
+    this._subscribers.forEach((subscriber) => {
+      if (subscriber.res.closed) {
+        console.log("proverka");
+        return;
+      }
+      subscriber.res.end(JSON.stringify(data));
+    });
+  }
+}
+var ChannelNames = /* @__PURE__ */ ((ChannelNames2) => {
+  ChannelNames2[ChannelNames2["ORDER_FLOW"] = 0] = "ORDER_FLOW";
+  return ChannelNames2;
+})(ChannelNames || {});
+class Broadcast {
+  constructor() {
+    this.channels = {};
+  }
+  createChannel(channelName) {
+    const channel = new Channel();
+    this.channels[channelName] = channel;
+    return channel;
+  }
+  getChannel(channelName) {
+    var _a;
+    return ((_a = this.channels) == null ? void 0 : _a[channelName]) ?? null;
+  }
+}
+const broadcast = new Broadcast();
+const orders = [];
+const orderChannel = broadcast.createChannel(ChannelNames.ORDER_FLOW);
+eventBus.on(Events["ORDER:CREATED"], (order) => {
+  orders.push(order);
+  orderChannel.messageForAllSubscribers(order);
+});
+const subscribeOnNewOrder = (req, res) => {
+  const TIMEOUT = 3e4;
+  orderChannel.addSubscriber(res);
+  setTimeout(() => {
+    res.end(`Application wasnt created for ${TIMEOUT / 1e3} seconds`);
+  }, TIMEOUT);
 };
 const get = (req, res) => {
-  res.end(String(orderLength));
-};
-const subscribeOnNewLength = (req, res) => {
-  subscribeUserOnChangeOrderLength(req, res);
+  res.end(JSON.stringify(orders));
 };
 function getDirName(moduleUrl) {
   const filename = fileURLToPath(moduleUrl);
@@ -58,14 +125,7 @@ const ROUTES = {
   "/favicon.ico": favicon,
   "/api/order/create": create,
   "/api/order/get": get,
-  "/api/order/subscribe": subscribeOnNewLength
-};
-const PORT = 3e3;
-const DOMAIN = "http://localhost";
-const BASE_URL = `${DOMAIN}:${PORT}`;
-const getParsedUrl = (req) => {
-  const parsedUrl = new URL(req.url || "/", BASE_URL);
-  return parsedUrl;
+  "/api/order/subscribe": subscribeOnNewOrder
 };
 function trigger404(req, res) {
   return () => {

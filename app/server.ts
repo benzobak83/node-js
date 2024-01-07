@@ -1,5 +1,6 @@
 import { getParsedUrl } from 'app/utils/getParsedUrl.js'
 import { ROUTES } from 'app/router/router.js'
+// import '../cli/sql/init.ts' - при ините приложения
 
 import {
   IncomingMessage,

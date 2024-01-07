@@ -26,7 +26,7 @@ export class Channel {
         console.log('proverka')
         return
       }
-
+      subscriber.res.statusCode = 200
       subscriber.res.end(JSON.stringify(data))
     })
   }
